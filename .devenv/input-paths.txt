@@ -1,0 +1,4 @@
+/home/nguyenhieu/Backpack/ProjectBook/hpcore/.devenv.flake.nix
+/home/nguyenhieu/Backpack/ProjectBook/hpcore/devenv.lock
+/home/nguyenhieu/Backpack/ProjectBook/hpcore/devenv.nix
+/home/nguyenhieu/Backpack/ProjectBook/hpcore/devenv.yaml
