@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart'; // Import the uuid package
 
 final logger = Logger();
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -13,27 +12,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Simple TODO App', // The app's title
+        title: 'Hpcore', // The app's title
         theme: ThemeData(
           primarySwatch: Colors.yellow, // Main theme color
           useMaterial3: true, // Optional: Use Material 3 design
         ),
-        home: const TodoListScreen());
+        home: const TasksScreen());
   }
 }
 
-class TodoListScreen extends StatefulWidget {
-  const TodoListScreen({super.key});
+class TasksScreen extends StatefulWidget {
+  const TasksScreen({super.key});
 
   @override
-  State<TodoListScreen> createState() => _TodoListScreenState();
+  State<TasksScreen> createState() => _TasksScreenState();
 }
 
-class _TodoListScreenState extends State<TodoListScreen> {
-  final List<TodoItem> _tasks = [
-    TodoItem(title: "Learn Flutter"),
-    TodoItem(title: "From a Place of Love", isDone: true),
-  ];
+class _TasksScreenState extends State<TasksScreen> {
+  final List<Task> _tasks = [];
 
   final TextEditingController _textFieldController = TextEditingController();
 
@@ -66,7 +62,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
               onPressed: () {
                 String newTaskTitle = _textFieldController.text;
                 if (newTaskTitle.isNotEmpty) {
-                  final newItem = TodoItem(title: newTaskTitle);
+                  final newItem = Task(title: newTaskTitle);
                   setState(() {
                     _tasks.add(newItem);
                   });
@@ -132,9 +128,40 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 }
 
-class TodoItem {
-  String title;
-  bool isDone;
+var uuid = Uuid();
 
-  TodoItem({required this.title, this.isDone = false});
+enum TaskType {
+  thrive,
+  endure,
+  indulge,
+  release,
+}
+
+class Task {
+  final String id;
+  String title;
+  String? description;
+  bool isDone;
+  TaskType taskType;
+  DateTime? dueDate;
+  DateTime creationDate;
+
+  Task(
+      {required this.title,
+      this.description,
+      this.isDone = false,
+      this.taskType = TaskType.endure,
+      this.dueDate})
+      : id = uuid.v4(),
+        creationDate = DateTime.now(); // Generate unique id on creation
+
+  void toggleDone() {
+    isDone = !isDone;
+  }
+
+  // for debugging/ logging
+  @override
+  String toString() {
+    return 'Task(id: $id, title: "$title", isDone: $isDone, taskType: $taskType, dueDate: $dueDate, creationDate: $creationDate)';
+  }
 }
