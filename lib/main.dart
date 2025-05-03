@@ -33,6 +33,8 @@ class _TasksScreenState extends State<TasksScreen> {
 
   final TextEditingController _textFieldController = TextEditingController();
 
+  TaskType _selectedTaskType = TaskType.indulge;
+
   void _removeTask(int index) {
     setState(() {
       _tasks.removeAt(index);
@@ -40,16 +42,71 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   Future<void> _displayAddTaskDialog(BuildContext context) async {
+    TaskType dialogSelectedType = _selectedTaskType;
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
+        _textFieldController.clear();
         return AlertDialog(
           title: const Text('Add a new task'),
-          content: TextField(
-            controller: _textFieldController,
-            decoration: const InputDecoration(hintText: 'Enter task here...'),
-            autofocus: true,
-          ),
+          content: StatefulBuilder(
+              builder: (BuildContext context, StateSetter dialogSetState) {
+            return SingleChildScrollView(
+              child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                TextField(
+                  controller: _textFieldController,
+                  decoration:
+                      const InputDecoration(hintText: "Enter task here"),
+                  autofocus: true,
+                ),
+                RadioListTile<TaskType>(
+                    title: const Text('Thrive'),
+                    value: TaskType.thrive,
+                    groupValue: dialogSelectedType,
+                    onChanged: (TaskType? value) {
+                      if (value != null) {
+                        dialogSetState(() {
+                          dialogSelectedType = value;
+                        });
+                      }
+                    }),
+                RadioListTile<TaskType>(
+                    title: const Text('Endure'),
+                    value: TaskType.endure,
+                    groupValue: dialogSelectedType,
+                    onChanged: (TaskType? value) {
+                      if (value != null) {
+                        dialogSetState(() {
+                          dialogSelectedType = value;
+                        });
+                      }
+                    }),
+                RadioListTile<TaskType>(
+                    title: const Text('Indulge'),
+                    value: TaskType.indulge,
+                    groupValue: dialogSelectedType,
+                    onChanged: (TaskType? value) {
+                      if (value != null) {
+                        dialogSetState(() {
+                          dialogSelectedType = value;
+                        });
+                      }
+                    }),
+                RadioListTile<TaskType>(
+                    title: const Text('Release'),
+                    value: TaskType.release,
+                    groupValue: dialogSelectedType,
+                    onChanged: (TaskType? value) {
+                      if (value != null) {
+                        dialogSetState(() {
+                          dialogSelectedType = value;
+                        });
+                      }
+                    }),
+              ]),
+            );
+          }),
           actions: <Widget>[
             TextButton(
               child: const Text("Cancel"),
@@ -128,13 +185,13 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 }
 
-var uuid = Uuid();
+var uuid = const Uuid();
 
 enum TaskType {
-  thrive,
-  endure,
-  indulge,
-  release,
+  thrive, // high consequence, high satisfaction
+  endure, // high consequence, low satisfaction
+  indulge, // low consequence, high satisfaction
+  release, // low consequence, low satisfaction
 }
 
 class Task {
@@ -145,13 +202,15 @@ class Task {
   TaskType taskType;
   DateTime? dueDate;
   DateTime creationDate;
+  List<String>? tags;
 
   Task(
       {required this.title,
       this.description,
       this.isDone = false,
       this.taskType = TaskType.endure,
-      this.dueDate})
+      this.dueDate,
+      this.tags})
       : id = uuid.v4(),
         creationDate = DateTime.now(); // Generate unique id on creation
 
