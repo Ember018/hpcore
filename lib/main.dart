@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart'; // Import the uuid package
 
@@ -32,8 +33,10 @@ class _TasksScreenState extends State<TasksScreen> {
   final List<Task> _tasks = [];
 
   final TextEditingController _textFieldController = TextEditingController();
+  final TextEditingController _descriptionFieldController =
+      TextEditingController();
 
-  TaskType _selectedTaskType = TaskType.indulge;
+  final TaskType _selectedTaskType = TaskType.medium;
 
   void _removeTask(int index) {
     setState(() {
@@ -48,6 +51,7 @@ class _TasksScreenState extends State<TasksScreen> {
       context: context,
       builder: (BuildContext context) {
         _textFieldController.clear();
+        _descriptionFieldController.clear();
         return AlertDialog(
           title: const Text('Add a new task'),
           content: StatefulBuilder(
@@ -60,9 +64,16 @@ class _TasksScreenState extends State<TasksScreen> {
                       const InputDecoration(hintText: "Enter task here"),
                   autofocus: true,
                 ),
+                TextField(
+                  controller: _descriptionFieldController,
+                  decoration:
+                      const InputDecoration(hintText: "Enter description here"),
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                ),
                 RadioListTile<TaskType>(
-                    title: const Text('Thrive'),
-                    value: TaskType.thrive,
+                    title: const Text('High'),
+                    value: TaskType.high,
                     groupValue: dialogSelectedType,
                     onChanged: (TaskType? value) {
                       if (value != null) {
@@ -72,8 +83,8 @@ class _TasksScreenState extends State<TasksScreen> {
                       }
                     }),
                 RadioListTile<TaskType>(
-                    title: const Text('Endure'),
-                    value: TaskType.endure,
+                    title: const Text('Medium'),
+                    value: TaskType.medium,
                     groupValue: dialogSelectedType,
                     onChanged: (TaskType? value) {
                       if (value != null) {
@@ -83,8 +94,8 @@ class _TasksScreenState extends State<TasksScreen> {
                       }
                     }),
                 RadioListTile<TaskType>(
-                    title: const Text('Indulge'),
-                    value: TaskType.indulge,
+                    title: const Text('Low'),
+                    value: TaskType.low,
                     groupValue: dialogSelectedType,
                     onChanged: (TaskType? value) {
                       if (value != null) {
@@ -94,8 +105,8 @@ class _TasksScreenState extends State<TasksScreen> {
                       }
                     }),
                 RadioListTile<TaskType>(
-                    title: const Text('Release'),
-                    value: TaskType.release,
+                    title: const Text('None'),
+                    value: TaskType.none,
                     groupValue: dialogSelectedType,
                     onChanged: (TaskType? value) {
                       if (value != null) {
@@ -118,13 +129,20 @@ class _TasksScreenState extends State<TasksScreen> {
               child: const Text('Add'),
               onPressed: () {
                 String newTaskTitle = _textFieldController.text;
+                String newTaskDescription = _descriptionFieldController.text;
                 if (newTaskTitle.isNotEmpty) {
-                  final newItem = Task(title: newTaskTitle);
+                  final newItem = Task(
+                      title: newTaskTitle,
+                      description: newTaskDescription.isNotEmpty
+                          ? newTaskDescription
+                          : null,
+                      taskType: dialogSelectedType);
                   setState(() {
                     _tasks.add(newItem);
                   });
 
                   _textFieldController.clear();
+                  _descriptionFieldController.clear();
 
                   Navigator.pop(context);
                 } else {}
@@ -140,6 +158,7 @@ class _TasksScreenState extends State<TasksScreen> {
   @override
   void dispose() {
     _textFieldController.dispose();
+    _descriptionFieldController.dispose();
     super.dispose();
   }
 
@@ -147,7 +166,7 @@ class _TasksScreenState extends State<TasksScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My TODO List'),
+        title: const Text('My Tasks'),
       ),
       body: _tasks.isEmpty
           ? const Center(child: Text("No tasks yet!"))
@@ -157,6 +176,10 @@ class _TasksScreenState extends State<TasksScreen> {
                 final task = _tasks[index];
                 return CheckboxListTile(
                   title: Text(task.title),
+                  subtitle:
+                      (task.description != null && task.description!.isNotEmpty)
+                          ? Text(task.description!)
+                          : null,
                   value: task.isDone,
                   onChanged: (bool? newValue) {
                     setState(() {
@@ -188,10 +211,10 @@ class _TasksScreenState extends State<TasksScreen> {
 var uuid = const Uuid();
 
 enum TaskType {
-  thrive, // high consequence, high satisfaction
-  endure, // high consequence, low satisfaction
-  indulge, // low consequence, high satisfaction
-  release, // low consequence, low satisfaction
+  high,
+  medium,
+  low,
+  none,
 }
 
 class Task {
@@ -208,7 +231,7 @@ class Task {
       {required this.title,
       this.description,
       this.isDone = false,
-      this.taskType = TaskType.endure,
+      this.taskType = TaskType.medium,
       this.dueDate,
       this.tags})
       : id = uuid.v4(),
